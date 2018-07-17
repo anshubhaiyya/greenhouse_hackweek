@@ -4,30 +4,37 @@ import os                             # Allows for the clearing of the Terminal 
 import time, datetime
 import glob
 
+###  Getting Inputs from the user
 print("This program will help you convert a Greenhouse Scorecards into a Paper Doc")
 print("First we need a Dropbox API token from you: ")
 papertoken = input()
 print("Next, enter your Greenhouse URL from your Google Calendar invite for the debrief: ")
 greenhouseURL = input()
-print('Lastly, you can optionally put this into a specific folder in Paper but inputting the folder URL here (or type "none" to skip this): '
+print('Lastly, input the folder URL here (or type "none" to skip this): ')
 paperFolder = input()
+###  Getting Inputs from the user
 
+
+###  Defining the Paper Doc's base variables for formatting in HTML
 title = ""
 references = '<a href="'+ greenhouseURL + '">Greenhouse Profile</a><br>'
 decisionTable = '<h1>Feedback</h1><br><table><tr><td><b>Interviewer</b></td><td><b>Decision</b></td><td><b>Focus</b></td></tr>'
 feedback = "<h2>Greenhouse Feedback</h2><br>";
+###  Defining the Paper Doc's base variables for formatting in HTML
 
 
+###  Breaking down the inputted URLs by the user, for the candidate ID, application ID and Paper Folder ID
 URLbreakdown = greenhouseURL.split("/")
 candidateID = int(URLbreakdown[-1].split("?")[0])
 applicationID = int(greenhouseURL.split("=")[1])
-if paperFolder != "none"
-    folderId = str(paperFolder.split("-")[-1]
-else
+if paperFolder != "none":
+    folderId = str(paperFolder.split("-")[-1])
+else:
     folderId = -1;
+###  Breaking down the inputted URLs by the user, for the candidate ID, application ID and Paper Folder ID
 
 
-# replace these with real API calls when Greenhouse API is available
+###  Will need to replace these with real API calls when Greenhouse API is available
 fakeCandresp = '''
 {
     "id": 53883394,
@@ -463,17 +470,25 @@ fakeScoreresp = '''
   }
 ]
 '''
-# replace these with real API calls when Greenhouse API is available
+###  Will need to replace these with real API calls when Greenhouse API is available
 
+
+###  Making the Candidate Info and Scorecard into workdable dictionaries in Python
 CandidateInfo = json.loads(fakeCandresp, strict=False)
 Scorecard = json.loads(fakeScoreresp, strict=False)
+###  Making the Candidate Info and Scorecard into workdable dictionaries in Python
 
+
+###  Building the Doc Title using the Candidate API response
 title = CandidateInfo["first_name"] + " " + CandidateInfo["last_name"] + " - " 
 for i in CandidateInfo["applications"]:
     if int(i["id"]) == applicationID:
         currentApp = i["jobs"][0]
-        title = title + str(currentApp["name"]) + "<br>"
+        title = title + str(currentApp["name"]) + " - "+ datetime.datetime.now().strftime("%d/%B/%Y")+ "<br>"
+###  Building the Doc Title
 
+
+##  Simultaneously building the decision table and feedback body using the Scorecard API response
 for j in Scorecard:
     decisionTable = decisionTable + "<tr><td>" + j["submitted_by"]["name"] + "</td><td>" + j["overall_recommendation"] + "</td><td>" + j["interview"] + "</td></tr>"
     feedback = feedback + "<b>" + j["submitted_by"]["name"] + "</b><br><b>" + j["overall_recommendation"] + "</b><br>"
@@ -483,24 +498,86 @@ for j in Scorecard:
         feedback = feedback + "<u>" + l["name"] + "</u><br>" + str(l["note"]) + "<br>"
     feedback = feedback + "<br>"
 decisionTable = decisionTable + "</table><br>"
+###  Simultaneously building the decision table and feedback body using the Scorecard API response
 
-
+###  Building one total doc variable for cleanliness
 totaldoc = title+decisionTable+feedback
-#localF = open(CandidateInfo["first_name"] + "_" + CandidateInfo["last_name"] + '.html', 'w')
-#localF.write(totaldoc)
 
+
+###  Define the API Arguments, and choose if you need a folder or not
 if folderId != -1:
     apiArgs = json.dumps({"import_format": "html", "parent_folder_id": folderId })
-else
+else:
     apiArgs = json.dumps({"import_format": "html"})
+###  Define the API Arguments, and choose if you need a folder or not
 
+###  Define the API headers and URL
 apiHeaders = {'Content-Type': 'application/octet-stream',
 		'Authorization': 'Bearer %s' % papertoken, 
 		'Dropbox-API-Arg': '%s' % apiArgs}
 apiUrl = "https://api.dropboxapi.com/2/paper/docs/create"
-aResult = requests.post(apiUrl, headers=apiHeaders, data = totaldoc)  # Create Paper Doc
+###  Define the API headers and URL
 
-if( aResult.status_code != 200 ):
-	print ('* Failed to get a response to call for /paper/docs/create. \nWe got an error [%s] with text "%s"' % (aResult.status_code, aResult.text))
-elif (aResult.status_code == 200):
-    print ('Success! API sent, doc created')
+###  Call the API to create the Paper Doc
+apiResult = requests.post(apiUrl, headers=apiHeaders, data = totaldoc)
+###  Call the API
+
+###  API responses, first if an error occurs for reporting and second to show the new doc URL
+if( apiResult.status_code != 200 ):
+	print ('* Failed to get a response to call for /paper/docs/create. \nWe got an error [%s] with text "%s"' % (apiResult.status_code, apiResult.text))
+elif ( apiResult.status_code == 200 ):
+    responseDict = json.loads(apiResult.text)
+    newdocUrl = "https://paper.dropbox.com/doc/" + responseDict["doc_id"]
+    print ('Success! You can find your new doc here: ' + newdocUrl);
+###  API responses, first if an error occurs for reporting and second to show the new doc URL
+
+
+    
+###  Optionally you can create a local HTML file if you so choose
+#localF = open(CandidateInfo["first_name"] + "_" + CandidateInfo["last_name"] + '.html', 'w')
+#localF.write(totaldoc) 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
