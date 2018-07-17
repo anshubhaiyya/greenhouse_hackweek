@@ -3,11 +3,12 @@ import requests
 import os                             # Allows for the clearing of the Terminal Window
 import time, datetime
 import glob
+import getpass
 
 ###  Getting Inputs from the user
 print("This program will help you convert a Greenhouse Scorecards into a Paper Doc")
 print("First we need a Dropbox API token from you: ")
-papertoken = input()
+papertoken = getpass.getpass()
 print("Next, enter your Greenhouse URL from your Google Calendar invite for the debrief: ")
 greenhouseURL = input()
 print('Lastly, input the folder URL here (or type "none" to skip this): ')
