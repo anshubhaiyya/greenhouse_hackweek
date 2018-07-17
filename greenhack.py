@@ -4,11 +4,13 @@ import os                             # Allows for the clearing of the Terminal 
 import time, datetime
 import glob
 
-papertoken = "0k0gaZECCcgAAAAAAFl-6CWAdRX0ewo0nmDmOnIwJEtTZ1wKjEf1mD58RoYqeJQF"
-
 print("This program will help you convert a Greenhouse Scorecards into a Paper Doc")
-print("To start, enter your Greenhouse URL from your Google Calendar: ")
+print("First we need a Dropbox API token from you: ")
+papertoken = input()
+print("Next, enter your Greenhouse URL from your Google Calendar invite for the debrief: ")
 greenhouseURL = input()
+print('Lastly, you can optionally put this into a specific folder in Paper but inputting the folder URL here (or type "none" to skip this): '
+paperFolder = input()
 
 title = ""
 references = '<a href="'+ greenhouseURL + '">Greenhouse Profile</a><br>'
@@ -19,6 +21,10 @@ feedback = "<h2>Greenhouse Feedback</h2><br>";
 URLbreakdown = greenhouseURL.split("/")
 candidateID = int(URLbreakdown[-1].split("?")[0])
 applicationID = int(greenhouseURL.split("=")[1])
+if paperFolder != "none"
+    folderId = str(paperFolder.split("-")[-1]
+else
+    folderId = -1;
 
 
 # replace these with real API calls when Greenhouse API is available
@@ -483,8 +489,10 @@ totaldoc = title+decisionTable+feedback
 #localF = open(CandidateInfo["first_name"] + "_" + CandidateInfo["last_name"] + '.html', 'w')
 #localF.write(totaldoc)
 
-
-apiArgs = json.dumps({"import_format": "html", "parent_folder_id": "e.1gg8YzoPEhbTkrhvQwJ2zz3SRYlg702Mc7MH7N6bhNR12yVUF3bU"})
+if folderId != -1:
+    apiArgs = json.dumps({"import_format": "html", "parent_folder_id": folderId })
+else
+    apiArgs = json.dumps({"import_format": "html"})
 
 apiHeaders = {'Content-Type': 'application/octet-stream',
 		'Authorization': 'Bearer %s' % papertoken, 
