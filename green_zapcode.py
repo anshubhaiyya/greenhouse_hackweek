@@ -25,10 +25,11 @@ candidateID = int(URLending.split("/")[0])
 applicationID = int(URLending.split("=")[-1])
 ###  Breaking down the inputted URLs by the user, for the candidate ID, application ID and Paper Folder ID
 
-###  Will need to replace these with real API calls when Greenhouse API is available
-fakeCandresp = '''
+###  Will need to remove these when using a real API
+
+apiCandresp = '''
 {
-    "id": 80747142,
+    "id": 53883394,
     "first_name": "John",
     "last_name": "Locke",
     "company": "The Tustin Box Company",
@@ -46,7 +47,7 @@ fakeCandresp = '''
         }
     ],
     "application_ids": [
-        93950882,
+        69102626,
         65153308
     ],
     "phone_numbers": [
@@ -102,7 +103,7 @@ fakeCandresp = '''
     ],
     "applications": [
         {
-            "id": 93950882,
+            "id": 69102626,
             "candidate_id": 53883394,
             "prospect": false,
             "applied_at": "2017-09-27T12:03:02.728Z",
@@ -257,15 +258,15 @@ fakeCandresp = '''
         }
     }
 }'''
-fakeScoreresp = '''
+apiScoreresp = '''
 [
   {
     "id": 211231,
     "updated_at": "2016-08-22T19:52:38.384Z",
     "created_at": "2016-08-22T19:52:38.384Z",
     "interview": "Application Review",
-    "candidate_id": 80747142,
-    "application_id": 93950882,
+    "candidate_id": 2131415,
+    "application_id": 23558552,
     "interviewed_at": "2016-08-18T16:00:00.000Z",
     "submitted_by": {
       "id": 4080,
@@ -461,7 +462,43 @@ fakeScoreresp = '''
   }
 ]
 '''
-###  Will need to replace these with real API calls when Greenhouse API is available
+
+###  Will need to remove these when using a real API
+
+
+###  Define the API headers and URL for Greenhouse
+
+candidateApiheaders = {'Authorization': 'Basic %s' % greenhousetoken}
+candidateApiurl = "https://harvest.greenhouse.io/v1/candidates/"+str(candidateID)
+
+scorecardApiheaders = {'Authorization': 'Basic %s' % greenhousetoken}
+scorecardApiurl = "https://harvest.greenhouse.io/v1/applications/" + applicationID + "/scorecards"
+
+###  Define the API headers and URL
+
+
+###  Call the API to Greenhouse
+
+apiCandresp = requests.get(candidateApiurl, headers=candidateApiheaders)
+if( apiCandresp.status_code != 200 ):
+	print ('* Failed to get a response to call for /candidates/. \nWe got an error [%s] with text "%s"' % (apiCandresp.status_code, apiCandresp.text))
+elif ( apiCandresp.status_code == 200 ):
+    print ('Successfully loaded candidate ' + str(candidateID));
+
+
+apiScoreresp = requests.get(scorecardApiurl, headers=scorecardApiheaders)
+if( apiScoreresp.status_code != 200 ):
+	print ('* Failed to get a response to call for /candidates/. \nWe got an error [%s] with text "%s"' % (apiScoreresp.status_code, apiScoreresp.text))
+elif ( apiScoreresp.status_code == 200 ):
+    print ('Successfully loaded scorecards for application ' + str(applicationID));
+
+###  Call the API to Greenhouse
+
+
+###  Making the Candidate Info and Scorecard into workdable dictionaries in Python
+CandidateInfo = json.loads(fakeCandresp, strict=False)
+Scorecard = json.loads(fakeScoreresp, strict=False)
+###  Making the Candidate Info and Scorecard into workdable dictionaries in Python
 
 
 ###  Defining the Paper Doc's base variables for formatting in HTML
@@ -470,13 +507,6 @@ references = '<a href="'+ greenhouseURL + '">Greenhouse Profile</a><br>'
 decisionTable = '<h1>Feedback</h1><br><table><tr><td><b>Interviewer</b></td><td><b>Decision</b></td><td><b>Focus</b></td></tr>'
 feedback = "<h2>Greenhouse Feedback</h2><br>";
 ###  Defining the Paper Doc's base variables for formatting in HTML
-
-
-
-###  Making the Candidate Info and Scorecard into workdable dictionaries in Python
-CandidateInfo = json.loads(fakeCandresp, strict=False)
-Scorecard = json.loads(fakeScoreresp, strict=False)
-###  Making the Candidate Info and Scorecard into workdable dictionaries in Python
 
 
 ###  Building the Doc Title using the Candidate API response
@@ -502,7 +532,6 @@ decisionTable = decisionTable + "</table><br>"
 
 ###  Building one total doc variable for cleanliness
 totaldoc = title+decisionTable+feedback
-
 
 ###  Define the API Arguments
 apiArgs = json.dumps({"import_format": "html"})
