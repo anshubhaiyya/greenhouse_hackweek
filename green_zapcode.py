@@ -5,40 +5,30 @@ import time, datetime
 import glob
 import getpass
 
-###  Getting Inputs from the user
-print("This program will help you convert a Greenhouse Scorecards into a Paper Doc")
-print("First we need a Dropbox API token from you: ")
-papertoken = getpass.getpass()
-print("Next, enter your Greenhouse URL from your Google Calendar invite for the debrief: ")
-greenhouseURL = raw_input()
-print('Lastly, input the folder URL here (or type "none" to skip this): ')
-paperFolder = raw_input()
-###  Getting Inputs from the user
+###  Defining Paper Token
+papertoken = ""
+calDescription = input_data["caldesc"]
 
 
-###  Defining the Paper Doc's base variables for formatting in HTML
-title = ""
-references = '<a href="'+ greenhouseURL + '">Greenhouse Profile</a><br>'
-decisionTable = '<h1>Feedback</h1><br><table><tr><td><b>Interviewer</b></td><td><b>Decision</b></td><td><b>Focus</b></td></tr>'
-feedback = "<h2>Greenhouse Feedback</h2><br>";
-###  Defining the Paper Doc's base variables for formatting in HTML
+###  folder input not needed for Zapier
+###print('Lastly, input the folder URL here (or type "none" to skip this): ')
+###paperFolder = raw_input()
 
+### Getting the calDescription variable from Zapier and getting the URL out of it
+urlIndex = calDescription.find("https://dropbox.greenhouse.io")
+equalIndex = calDescription.find("=") + 9
+greenhouseURL = calDescription[urlIndex:equalIndex]
 
 ###  Breaking down the inputted URLs by the user, for the candidate ID, application ID and Paper Folder ID
-URLbreakdown = greenhouseURL.split("/")
-candidateID = int(URLbreakdown[-1].split("?")[0])
-applicationID = int(greenhouseURL.split("=")[1])
-if paperFolder != "none":
-    folderId = str(paperFolder.split("-")[-1])
-else:
-    folderId = -1;
+URLending = greenhouseURL.split("/people/")[-1]
+candidateID = int(URLending.split("/")[0])
+applicationID = int(URLending.split("=")[-1])
 ###  Breaking down the inputted URLs by the user, for the candidate ID, application ID and Paper Folder ID
-
 
 ###  Will need to replace these with real API calls when Greenhouse API is available
 fakeCandresp = '''
 {
-    "id": 53883394,
+    "id": 80747142,
     "first_name": "John",
     "last_name": "Locke",
     "company": "The Tustin Box Company",
@@ -56,7 +46,7 @@ fakeCandresp = '''
         }
     ],
     "application_ids": [
-        69102626,
+        93950882,
         65153308
     ],
     "phone_numbers": [
@@ -112,7 +102,7 @@ fakeCandresp = '''
     ],
     "applications": [
         {
-            "id": 69102626,
+            "id": 93950882,
             "candidate_id": 53883394,
             "prospect": false,
             "applied_at": "2017-09-27T12:03:02.728Z",
@@ -274,8 +264,8 @@ fakeScoreresp = '''
     "updated_at": "2016-08-22T19:52:38.384Z",
     "created_at": "2016-08-22T19:52:38.384Z",
     "interview": "Application Review",
-    "candidate_id": 2131415,
-    "application_id": 23558552,
+    "candidate_id": 80747142,
+    "application_id": 93950882,
     "interviewed_at": "2016-08-18T16:00:00.000Z",
     "submitted_by": {
       "id": 4080,
@@ -474,6 +464,15 @@ fakeScoreresp = '''
 ###  Will need to replace these with real API calls when Greenhouse API is available
 
 
+###  Defining the Paper Doc's base variables for formatting in HTML
+title = ""
+references = '<a href="'+ greenhouseURL + '">Greenhouse Profile</a><br>'
+decisionTable = '<h1>Feedback</h1><br><table><tr><td><b>Interviewer</b></td><td><b>Decision</b></td><td><b>Focus</b></td></tr>'
+feedback = "<h2>Greenhouse Feedback</h2><br>";
+###  Defining the Paper Doc's base variables for formatting in HTML
+
+
+
 ###  Making the Candidate Info and Scorecard into workdable dictionaries in Python
 CandidateInfo = json.loads(fakeCandresp, strict=False)
 Scorecard = json.loads(fakeScoreresp, strict=False)
@@ -505,12 +504,8 @@ decisionTable = decisionTable + "</table><br>"
 totaldoc = title+decisionTable+feedback
 
 
-###  Define the API Arguments, and choose if you need a folder or not
-if folderId != -1:
-    apiArgs = json.dumps({"import_format": "html", "parent_folder_id": folderId })
-else:
-    apiArgs = json.dumps({"import_format": "html"})
-###  Define the API Arguments, and choose if you need a folder or not
+###  Define the API Arguments
+apiArgs = json.dumps({"import_format": "html"})
 
 ###  Define the API headers and URL
 apiHeaders = {'Content-Type': 'application/octet-stream',
@@ -522,63 +517,3 @@ apiUrl = "https://api.dropboxapi.com/2/paper/docs/create"
 ###  Call the API to create the Paper Doc
 apiResult = requests.post(apiUrl, headers=apiHeaders, data = totaldoc)
 ###  Call the API
-
-###  API responses, first if an error occurs for reporting and second to show the new doc URL
-if( apiResult.status_code != 200 ):
-	print ('* Failed to get a response to call for /paper/docs/create. \nWe got an error [%s] with text "%s"' % (apiResult.status_code, apiResult.text))
-elif ( apiResult.status_code == 200 ):
-    responseDict = json.loads(apiResult.text)
-    newdocUrl = "https://paper.dropbox.com/doc/" + responseDict["doc_id"]
-    print ('Success! You can find your new doc here: ' + newdocUrl);
-###  API responses, first if an error occurs for reporting and second to show the new doc URL
-
-
-    
-###  Optionally you can create a local HTML file if you so choose
-#localF = open(CandidateInfo["first_name"] + "_" + CandidateInfo["last_name"] + '.html', 'w')
-#localF.write(totaldoc) 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
